@@ -1,0 +1,42 @@
+name: "Check notebook submission"
+on: [pull_request]
+jobs:
+  check_submission:
+    name: "Check submission"
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Set up Python 3.7"
+        uses: actions/setup-python@v1
+        with:
+          python-version: "3.7"
+
+      - name: "Install jq"
+        run: |
+          sudo apt-get install jq
+
+      - name: "Checkout pull request"
+        uses: actions/checkout@v2
+
+      - name: "Checkout master"
+        # check out master to the directory master to execute scripts and possibly for comparison
+        uses: actions/checkout@v2
+        with:
+          ref: "master"
+          path: "master"
+
+      - name: "Find changed files"
+        id: file_changes
+        uses: trilom/file-changes-action@v1
+        with:
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: "Check submissions"
+        run: |
+          for new_file in $(jq --raw-output ".[]" $HOME/files_added.json); do
+              echo "Checking newfile: $new_file"
+              python ./master/.github/check_nb_metadata.py "$new_file"
+          done
+          for mod_file in $(jq --raw-output ".[]" $HOME/files_modified.json); do
+              echo "Checking modified file: $mod_file"
+              python ./master/.github/check_nb_metadata.py "$new_file"
+          done
