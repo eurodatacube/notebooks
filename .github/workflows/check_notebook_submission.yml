@@ -10,10 +10,6 @@ jobs:
         with:
           python-version: "3.7"
 
-      - name: "Install jq"
-        run: |
-          sudo apt-get install jq
-
       - name: "Checkout pull request"
         uses: actions/checkout@v2
 
