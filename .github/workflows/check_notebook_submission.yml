@@ -12,6 +12,12 @@ jobs:
 
       - name: "Checkout pull request"
         uses: actions/checkout@v2
+        with:
+            fetch-depth: 2  # need fetch depth to get commit message
+
+      - name: "Retrieve last commit message"
+        id: commitmsg
+        run: echo "::set-output name=commitmsg::$(git log --no-merges -1 --oneline)"
 
       - name: "Checkout master"
         # check out master to the directory master to execute scripts and possibly for comparison
@@ -27,12 +33,28 @@ jobs:
           githubToken: ${{ secrets.GITHUB_TOKEN }}
 
       - name: "Check submissions"
+        if: "!contains(steps.commitmsg.outputs.commitmsg, 'skip ci')"
+        env:
+          CONTRIBUTION_HANDLER_API_KEY: ${{ secrets.CONTRIBUTION_HANDLER_API_KEY }}
         run: |
+          pull_request_number=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
+
+          function trigger_execution() {
+              notebook_path=$1
+              curl \
+                  --header 'Content-Type: application/json' \
+                  --data-raw "{\"notebook_path\": \"${notebook_path}\", \"pull_request_number\": \"${pull_request_number}\"}" \
+                  "https://contributions-api.dev.hub.eox.at/notebook-submission-check?api_key=${CONTRIBUTION_HANDLER_API_KEY}"
+              # TODO: set to production
+          }
+
           for new_file in $(jq --raw-output ".[]" $HOME/files_added.json); do
               echo "Checking newfile: $new_file"
               python ./master/.github/check_nb_metadata.py "$new_file"
+              trigger_execution "$new_file"
           done
           for mod_file in $(jq --raw-output ".[]" $HOME/files_modified.json); do
               echo "Checking modified file: $mod_file"
               python ./master/.github/check_nb_metadata.py "$new_file"
+              trigger_execution "$mod_file"
           done
