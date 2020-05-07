@@ -58,3 +58,12 @@ jobs:
               python ./master/.github/check_nb_metadata.py "$new_file"
               trigger_execution "$mod_file"
           done
+
+      - name: "Comment PR"
+        if: "!contains(steps.commitmsg.outputs.commitmsg, 'skip ci')"
+        uses: unsplash/comment-on-pr@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          msg: "I have scheduled automatic execution for all changed notebooks on the EDC cluster. The results should arrive within minutes."
+          check_for_duplicate_msg: true
