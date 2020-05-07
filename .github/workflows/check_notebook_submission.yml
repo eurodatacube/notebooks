@@ -41,7 +41,7 @@ jobs:
 
           function trigger_execution() {
               notebook_path=$1
-              curl \
+              curl --silent \
                   --header 'Content-Type: application/json' \
                   --data-raw "{\"notebook_path\": \"${notebook_path}\", \"pull_request_number\": \"${pull_request_number}\"}" \
                   "https://contributions-api.dev.hub.eox.at/notebook-submission-check?api_key=${CONTRIBUTION_HANDLER_API_KEY}"
