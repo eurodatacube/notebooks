@@ -66,4 +66,4 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           msg: "I have scheduled automatic execution for all changed notebooks on the EDC cluster. The results should arrive within minutes."
-          check_for_duplicate_msg: true
+          check_for_duplicate_msg: false
