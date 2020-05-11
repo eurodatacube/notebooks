@@ -37,6 +37,7 @@ jobs:
         env:
           CONTRIBUTION_HANDLER_API_KEY: ${{ secrets.CONTRIBUTION_HANDLER_API_KEY }}
         run: |
+          set -e
           pull_request_number=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
 
           function trigger_execution() {
