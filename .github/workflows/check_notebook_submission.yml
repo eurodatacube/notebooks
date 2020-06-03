@@ -46,7 +46,8 @@ jobs:
                   --header 'Content-Type: application/json' \
                   --data-raw "{\"notebook_path\": \"${notebook_path}\", \"pull_request_number\": \"${pull_request_number}\"}" \
                   "https://contributions-api.dev.hub.eox.at/notebook-submission-check?api_key=${CONTRIBUTION_HANDLER_API_KEY}"
-              # TODO: set to production
+              # NOTE: this currently calls dev, which is if we want to test this notebook against things we can quickly update.
+              #       at some point, this might not be feasible any more
           }
 
           for new_file in $(jq --raw-output ".[]" $HOME/files_added.json); do
