@@ -57,7 +57,7 @@ jobs:
           done
           for mod_file in $(jq --raw-output ".[]" $HOME/files_modified.json); do
               echo "Checking modified file: $mod_file"
-              python ./master/.github/check_nb_metadata.py "$new_file"
+              python ./master/.github/check_nb_metadata.py "$mod_file"
               trigger_execution "$mod_file"
           done
 
