@@ -45,7 +45,7 @@ jobs:
               curl --silent \
                   --header 'Content-Type: application/json' \
                   --data-raw "{\"notebook_path\": \"${notebook_path}\", \"pull_request_number\": \"${pull_request_number}\"}" \
-                  "https://contributions-api.dev.hub.eox.at/notebook-submission-check?api_key=${CONTRIBUTION_HANDLER_API_KEY}"
+                  "https://contributions-api.hub.eox.at/notebook-submission-check?api_key=${CONTRIBUTION_HANDLER_API_KEY}"
               # NOTE: this currently calls dev, which is if we want to test this notebook against things we can quickly update.
               #       at some point, this might not be feasible any more
           }
