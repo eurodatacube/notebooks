@@ -10,4 +10,8 @@ Curated list of Jupyter notebooks demonstrating the capabilities of the Euro Dat
   kubectl -n edc delete -f ~/git/flux-config/workloads/edc/update-notebooks-job.yaml
   kubectl -n edc apply -f ~/git/flux-config/workloads/edc/update-notebooks-job.yaml
   ```
-* Cycle relevant services: `contribution-handler`, `nbviewer`
+* Cycle relevant services: `contribution-handler`, `nbviewer`:
+  ```
+  kubectl -n prod rollout restart deployment contribution-handler
+  kubectl -n prod rollout restart deployment nbviewer
+  ```
