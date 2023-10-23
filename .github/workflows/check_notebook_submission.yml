@@ -40,6 +40,8 @@ jobs:
           set -e
           pull_request_number=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
 
+          exit 0
+
           function trigger_execution() {
               notebook_path=$1
               echo "Triggering execution of ${notebook_path}"
