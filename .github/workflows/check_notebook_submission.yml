@@ -5,11 +5,6 @@ jobs:
     name: "Check submission"
     runs-on: ubuntu-latest
     steps:
-      - name: "Set up Python 3.7"
-        uses: actions/setup-python@v1
-        with:
-          python-version: "3.7"
-
       - name: "Checkout pull request"
         uses: actions/checkout@v2
         with:
@@ -35,21 +30,31 @@ jobs:
       - name: "Check submissions"
         if: "!contains(steps.commitmsg.outputs.commitmsg, 'skip ci')"
         env:
-          CONTRIBUTION_HANDLER_API_KEY: ${{ secrets.CONTRIBUTION_HANDLER_API_KEY }}
+          HUB_PYGEOAPI_AUTH_TOKEN: ${{ secrets.HUB_PYGEOAPI_AUTH_TOKEN }}
         run: |
           set -e
           pull_request_number=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
 
-          exit 0
-
           function trigger_execution() {
               notebook_path=$1
               echo "Triggering execution of ${notebook_path}"
-              curl --silent \
+
+              curl -X POST \
                   --fail \
+                  -v \
+                  "https://hub.eox.at/services/eoxhub-gateway/eurodatacube0/pygeoapi/processes/execute-notebook/execution" \
                   --header 'Content-Type: application/json' \
-                  --data-raw "{\"notebook_path\": \"${notebook_path}\", \"pull_request_number\": \"${pull_request_number}\"}" \
-                  "https://contributions-api.hub.eox.at/notebook-submission-check?api_key=${CONTRIBUTION_HANDLER_API_KEY}"
+                  -H "Authorization: Token ${HUB_PYGEOAPI_AUTH_TOKEN}" \
+                  --data-raw '{"inputs": {
+                "notebook": "extra/notebook-verification/execute-eurodatacube-from-PR.ipynb",
+                "cpu_requests": "0.3",
+                "cpu_limit": "0.3",
+                "mem_requests": "1G",
+                "mem_limit": "1G",
+                "kernel": "python3",
+                "parameters_json": {"pull_request_number": '"${pull_request_number}"', "notebook_path_in_repo": "'"${notebook_path}"'"}
+              }}'
+
               if [ $? -ne 0 ] ; then
                   echo "Notebook execution trigger failed"
                   exit 1
@@ -58,12 +63,10 @@ jobs:
 
           for new_file in $(jq --raw-output ".[]" $HOME/files_added.json); do
               echo "Checking newfile: $new_file"
-              python ./master/.github/check_nb_metadata.py "$new_file"
               trigger_execution "$new_file"
           done
           for mod_file in $(jq --raw-output ".[]" $HOME/files_modified.json); do
               echo "Checking modified file: $mod_file"
-              python ./master/.github/check_nb_metadata.py "$mod_file"
               trigger_execution "$mod_file"
           done
 
@@ -73,5 +76,5 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          msg: "I have scheduled automatic execution for all changed notebooks on the EDC cluster. The results should arrive within minutes."
+          msg: "I have scheduled an automatic execution for all changed notebooks on EOxHub. The results should arrive within minutes."
           check_for_duplicate_msg: false
